@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "es2022",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "rewriteRelativeImportExtensions": true,
+    "lib": ["es2022", "es2022.error", "dom"],
+    "declaration": true,
+    "declarationMap": false,
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
+    "strict": true,
+    "allowJs": true,
+    "removeComments": false,
+    "sourceMap": false,
+    "outDir": "dist",
+    "importHelpers": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["**/*.test.ts", "dist", "node_modules"]
+}

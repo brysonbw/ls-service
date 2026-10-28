@@ -1,0 +1,58 @@
+name: "CI"
+
+on:
+  push:
+    branches:
+      - "*"
+      - "*/*"
+      - "**"
+  pull_request:
+    branches:
+      - "*"
+      - "*/*"
+      - "**"
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [24.x, 26.x]
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: true
+      - name: Check changes
+        id: changed-ignored
+        uses: tj-actions/changed-files@v47
+        with:
+          files: |
+            **.md
+            .github/**
+            docs/**
+            bin/**
+      - name: Install pnpm
+        if: steps.changed-ignored.outputs.only_modified == 'false'
+        uses: pnpm/action-setup@v6
+        with:
+          version: 10
+          cache: true
+      - name: Setup node
+        if: steps.changed-ignored.outputs.only_modified == 'false'
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: pnpm
+      - name: Install dependencies
+        if: steps.changed-ignored.outputs.only_modified == 'false'
+        run: pnpm install --frozen-lockfile
+      - name: Run lint and tests
+        if: steps.changed-ignored.outputs.only_modified == 'false'
+        run: |
+          pnpm run lint && pnpm run test
+          echo "✅ Lint and tests completed successfully on Node.js ${{ matrix.node-version }}!"

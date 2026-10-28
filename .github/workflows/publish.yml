@@ -1,0 +1,73 @@
+name: Publish
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+      - "v**"
+  workflow_dispatch:
+jobs:
+  publish:
+    if: github.event_name == 'workflow_dispatch' || (github.event.pull_request.merged == true && github.event.pull_request.head.label == 'ls-service:release')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - name: "Release PR info"
+        if: github.event_name != 'workflow_dispatch'
+        run: echo "PR ${{ github.event.number }}"
+      - uses: actions/checkout@v7
+      - name: git config
+        run: |
+          git config user.name "${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+      - uses: pnpm/action-setup@v6
+        name: Install pnpm
+        with:
+          version: 10
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org/
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: get-npm-version
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@main
+      - name: Extract release notes
+        id: extract-release-notes
+        uses: ffurrer2/extract-release-notes@v3
+      # Tag Release
+      - name: "Push tag v${{ steps.package-version.outputs.current-version }}"
+        uses: rickstaa/action-create-tag@v1
+        id: tag_version
+        with:
+          tag: "v${{ steps.package-version.outputs.current-version }}"
+      # Resolve NPM Tag
+      - name: NPM TAG
+        id: "npm_tag"
+        run: |
+          version="${{ steps.package-version.outputs.current-version }}"
+          if [[ "$version" == *-* ]]; then
+            echo "tag=beta" >> $GITHUB_OUTPUT
+          else
+            echo "tag=latest" >> $GITHUB_OUTPUT
+          fi
+      - name: Set fallback tag if empty
+        id: fallback_tag
+        run: |
+          echo "tag=${{ steps.npm_tag.outputs.tag || 'latest' }}" >> $GITHUB_OUTPUT
+      # GitHub Release
+      - name: "Create a GitHub release v${{ steps.package-version.outputs.current-version }}"
+        uses: ncipollo/release-action@v1
+        with:
+          tag: "v${{ steps.package-version.outputs.current-version }}"
+          name: "Release v${{ steps.package-version.outputs.current-version }}"
+          body: |
+            ## Release notes:
+            ${{ steps.extract-release-notes.outputs.release_notes }}
+      # NPM Release
+      - name: Publish the release to NPM
+        run: pnpm publish --provenance --access public --tag ${{ steps.fallback_tag.outputs.tag }}

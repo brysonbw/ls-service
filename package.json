@@ -1,0 +1,121 @@
+{
+  "name": "ls-service",
+  "version": "0.0.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "description": "Minimal, namespaced, and typed localStorage wrapper.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build:all": "pnpm run build && pnpm run typedoc:generate",
+    "build": "rollup -c",
+    "test": "tsx --test src/tests/**/*",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "typedoc:generate": "typedoc --plugin typedoc-plugin-markdown",
+    "release": "release-it",
+    "release:dry": "release-it --dry-run --no-npm",
+    "release:info": "release-it --release-version",
+    "release:changelog:fix": "auto-changelog -p && git add CHANGELOG.md",
+    "size": "size-limit --json > size-report.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/brysonbw/ls-service.git"
+  },
+  "keywords": [
+    "localstorage",
+    "storage",
+    "namespace"
+  ],
+  "author": "Bryson Ward",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/brysonbw/ls-service/issues"
+  },
+  "contributors": [
+    "Bryson Ward (https://github.com/brysonbw)"
+  ],
+    "dependencies": {
+    "tslib": "^2.8.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@rollup/plugin-node-resolve": "^16.0.3",
+    "@rollup/plugin-typescript": "^12.3.1",
+    "@size-limit/file": "^14.3.0",
+    "auto-changelog": "^2.7.0",
+    "esbuild": "^0.28.2",
+    "eslint": "^10.13.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-jsdoc": "^65.4.1",
+    "eslint-plugin-prettier": "^5.5.7",
+    "eslint-plugin-security": "^4.2.0",
+    "globals": "^17.13.0",
+    "release-it": "^21.1.1",
+    "rollup": "^4.65.0",
+    "rollup-plugin-cleanup": "^3.2.1",
+    "rollup-plugin-delete": "^3.0.2",
+    "rollup-plugin-dts": "^6.5.1",
+    "size-limit": "^14.3.0",
+    "tsx": "^4.23.15",
+    "typedoc": "^0.28.20",
+    "typedoc-plugin-markdown": "^4.14.1",
+    "typescript": "~5.7.3",
+    "typescript-eslint": "^8.72.0"
+  },
+  "release-it": {
+    "git": {
+      "commitMessage": "chore: release v${version}",
+      "push": true,
+      "commit": true,
+      "tag": true,
+      "requireCommits": false,
+      "requireCleanWorkingDir": false
+    },
+    "github": {
+      "release": true,
+      "draft": true
+    },
+    "npm": {
+      "publish": false,
+      "ignoreVersion": false
+    },
+    "hooks": {
+      "before:init": [
+        "pnpm run lint",
+        "pnpm run test"
+      ],
+      "after:bump": "pnpm run build:all && git add ./dist ./docs/api-reference ./pnpm-lock.yaml",
+      "before:release": "pnpm run release:changelog:fix",
+      "after:release": "echo Successfully released ${name} v${version}."
+    }
+  },
+  "auto-changelog": {
+    "breakingPattern": "Breaking change"
+  },
+  "typedocOptions": {
+    "entryPoints": [
+      "src/typedoc.ts"
+    ],
+    "disableSources": true,
+    "out": "docs/api-reference",
+    "readme": "none",
+    "name": "LS Service API Reference"
+  },
+  "size-limit": [
+    {
+      "path": "dist/index.js",
+      "name": "Browser build (ESM)",
+      "limit": "5kB",
+      "gzip": true
+    }
+  ]
+}
