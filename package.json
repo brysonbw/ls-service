@@ -1,6 +1,6 @@
 {
   "name": "ls-service",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "engines": {
     "node": ">=24"
   },
@@ -43,7 +43,7 @@
   "contributors": [
     "Bryson Ward (https://github.com/brysonbw)"
   ],
-    "dependencies": {
+  "dependencies": {
     "tslib": "^2.8.1"
   },
   "devDependencies": {
